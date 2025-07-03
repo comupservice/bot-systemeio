@@ -9,12 +9,12 @@ async function fetchAllContacts() {
     const allContacts = [];
     const perPage = 25;
 
-    for (let page = 1; page <= 2; page++) {
+    for (let page = 1; ; page++) {
         try {
             const res = await axios.get(`https://api.systeme.io/api/contacts`, {
                 headers: { 'X-API-Key': systemeio.apiKey },
                 params: {
-                    page: page,
+                    page,
                     limit: perPage
                 }
             });
@@ -24,7 +24,11 @@ async function fetchAllContacts() {
             console.log(`📦 Page ${page} : ${contacts.length} contacts`);
             allContacts.push(...contacts);
 
-            await new Promise(resolve => setTimeout(resolve, 750));
+            // S'il y a moins de contacts que le max par page, on a atteint la fin
+            if (contacts.length < perPage) break;
+
+            // Anti-spam : attendre un peu entre les appels
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
         } catch (err) {
             console.error(`❌ Erreur sur page ${page} :`, err.response?.data || err.message);
